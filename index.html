@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>赛车小说 · 四双手 / 第九行</title>
+<style>
+:root{
+  --blue:#0047AB; --pink:#d63384;
+  --red:#e10600; --navy:#003366;
+  --ink:#15151a; --paper:#f7f7f5; --line:#e4e4e0;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif;
+  background:var(--paper); color:var(--ink);
+  min-height:100vh; -webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:""; position:fixed; top:0; left:0;
+  width:6px; height:100%;
+  background:linear-gradient(to bottom,var(--blue),var(--pink) 50%,var(--red) 50%,var(--navy));
+  z-index:1000;
+}
+.wrap{max-width:1080px; margin:0 auto; padding:64px 56px 120px 72px;}
+header.top{margin-bottom:56px;}
+header.top .kicker{
+  font-size:0.72em; letter-spacing:4px; text-transform:uppercase;
+  color:#9a9a96; margin-bottom:14px;
+}
+header.top h1{
+  font-size:3.1em; font-weight:900; letter-spacing:2px; line-height:1.15;
+}
+header.top h1 em{
+  font-style:normal; color:var(--pink);
+}
+header.top p.lead{
+  margin-top:18px; font-size:1.02em; color:#6b6b68; max-width:62ch; line-height:1.8;
+}
+.grid{display:grid; grid-template-columns:1fr 1fr; gap:28px;}
+.card{
+  position:relative; display:block; text-decoration:none; color:inherit;
+  background:#fff; border:1px solid var(--line); border-radius:14px;
+  overflow:hidden; transition:transform .25s ease, box-shadow .25s ease;
+}
+.card:hover{transform:translateY(-6px); box-shadow:0 18px 40px rgba(0,0,0,.14);}
+.thumb{position:relative; aspect-ratio:16/9; overflow:hidden;}
+.thumb img{width:100%; height:100%; object-fit:cover; display:block; transition:transform .5s ease;}
+.card:hover .thumb img{transform:scale(1.05);}
+.thumb .badge{
+  position:absolute; top:14px; left:14px;
+  background:rgba(255,255,255,.92); color:#111;
+  font-size:0.7em; letter-spacing:2px; text-transform:uppercase;
+  padding:5px 11px; border-radius:20px; font-weight:700;
+}
+.thumb .num{
+  position:absolute; right:16px; bottom:10px;
+  font-family:"SF Mono",monospace; font-size:2.6em; font-weight:900;
+  color:rgba(255,255,255,.9); line-height:1;
+  text-shadow:0 2px 12px rgba(0,0,0,.4);
+}
+.body{padding:22px 24px 26px;}
+.body .series{font-size:0.72em; letter-spacing:2px; text-transform:uppercase; font-weight:700;}
+.body h2{font-size:1.62em; font-weight:900; margin:8px 0 10px; letter-spacing:.5px;}
+.body p{font-size:0.95em; color:#6b6b68; line-height:1.75;}
+.meta{
+  margin-top:18px; padding-top:16px; border-top:1px dashed var(--line);
+  display:flex; gap:8px; flex-wrap:wrap;
+}
+.meta span{
+  font-size:0.72em; letter-spacing:1px; color:#8a8a85;
+  background:#f2f2ef; padding:4px 10px; border-radius:4px;
+}
+.card .arrow{
+  position:absolute; right:24px; bottom:26px;
+  font-size:1.3em; color:#cfcfca; transition:transform .25s, color .25s;
+}
+.card:hover .arrow{transform:translateX(6px);}
+/* 戴通纳卡片配色 */
+.card.daytona .series{color:var(--blue);}
+.card.daytona:hover .arrow{color:var(--pink);}
+/* 纳斯卡卡片配色 */
+.card.nascar .series{color:var(--red);}
+.card.nascar:hover .arrow{color:var(--red);}
+
+.note{
+  margin-top:56px; padding:26px 30px; background:#fff;
+  border:1px solid var(--line); border-radius:14px;
+}
+.note h3{font-size:1.05em; font-weight:800; margin-bottom:12px;}
+.note p{font-size:0.92em; color:#6b6b68; line-height:1.8;}
+.note code{background:#f2f2ef; padding:1px 6px; border-radius:3px; font-size:0.9em;}
+@media(max-width:760px){
+  .wrap{padding:40px 24px 80px 30px;}
+  .grid{grid-template-columns:1fr;}
+  header.top h1{font-size:2.2em;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="kicker">Racing Fiction · 赛车短篇小说</div>
+    <h1>两场比赛，<em>四个人的二十四小时</em></h1>
+    <p class="lead">一边是精密手术——四个人轮流上阵，算油、保胎、夜战尺子圈；一边是酒吧斗殴——四十台车挤成罐头，撞了拿大锤敲回去继续跑。点一本开始读。</p>
+  </header>
+
+  <section class="grid">
+
+    <a class="card daytona" href="daytona.html">
+      <div class="thumb">
+        <img src="cover-daytona.png" alt="戴通纳封面">
+        <span class="badge">IMSA · Endurance</span>
+        <span class="num">90</span>
+      </div>
+      <div class="body">
+        <div class="series">戴通纳24小时 · GTD Pro</div>
+        <h2>戴通纳，九十号：四双手</h2>
+        <p>保时捷 911 GT3 R，蓝粉涂装，四人接力跑完一整天。没有 ABS，没有混动，每一次刹车都是脚底读纹理。赢的从来不是最快的那台，是最后还在跑、而且位置对的那台。</p>
+        <div class="meta">
+          <span>14 页</span><span>四视角第一人称</span><span>配乐循环</span>
+        </div>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+
+    <a class="card nascar" href="nascar.html">
+      <div class="thumb">
+        <img src="cover-nascar.png" alt="塔拉迪加封面">
+        <span class="badge">NASCAR · Cup</span>
+        <span class="num">42</span>
+      </div>
+      <div class="body">
+        <div class="series">塔拉迪加超级赛道 · 第九行</div>
+        <h2>塔拉迪加，第九行：钢铁与肘击</h2>
+        <p>2.66 英里，33 度斜坡 banking，四十台 V8 铁疙瘩挤在一起跑。合理碰撞是文化，贴上去靠空气把人推走是战术，挡泥板被撞凹了——拿大锤敲回去。</p>
+        <div class="meta">
+          <span>10 章</span><span>暴力维修</span><span>配乐循环</span>
+        </div>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+
+  </section>
+
+  <div class="note">
+    <h3>关于这里的赛车</h3>
+    <p>两篇用的都是真实赛事规则（IMSA 戴通纳24小时 / NASCAR 塔拉迪加），但人物与情节是虚构的。每篇开头都给不懂赛车的人准备了"人话版"术语解释——不用提前懂赛车，跟着故事走就行。音频文件 <code>daytona.mp3</code> / <code>nascar.mp3</code> 需与本页放在同一目录，浏览器需要你点一下 ▶ 才放（这是浏览器规定，不是 bug）。</p>
+  </div>
+
+</div>
+</body>
+</html>

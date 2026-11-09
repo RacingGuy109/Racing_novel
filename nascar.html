@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>塔拉迪加，第九行：钢铁与肘击</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+  background: #ffffff;
+  color: #1a1a1a;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0;
+  width: 6px; height: 100%;
+  background: linear-gradient(to bottom, #e10600 0%, #e10600 50%, #003366 50%, #003366 100%);
+  z-index: 1000;
+}
+
+#book { width: 92vw; max-width: 960px; height: 88vh; position: relative; }
+
+.page {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%;
+  padding: 48px 56px 80px;
+  overflow-y: auto;
+  opacity: 0; transform: translateX(40px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
+}
+.page.active { opacity: 1; transform: translateX(0); pointer-events: auto; }
+
+.page h1 { font-size: 2.4em; font-weight: 900; letter-spacing: 2px; margin-bottom: 0.3em; color: #111; }
+.page h2 { font-size: 1.4em; font-weight: 700; margin: 1.2em 0 0.5em; color: #e10600; }
+.page h3 { font-size: 1.1em; font-weight: 600; margin: 1em 0 0.4em; color: #003366; }
+.page p { font-size: 1.02em; line-height: 1.85; margin-bottom: 0.9em; color: #2a2a2a; }
+
+.page .big { font-size: 3.2em; font-weight: 900; color: #e10600; line-height: 1; margin: 0.2em 0; font-variant-numeric: tabular-nums; }
+.page .label { font-size: 0.75em; letter-spacing: 3px; text-transform: uppercase; color: #888; margin-bottom: 0.3em; }
+.page .quote { border-left: 3px solid #e10600; padding: 0.6em 1em; margin: 1em 0; background: rgba(225,6,0,0.05); font-style: italic; color: #444; }
+.page .telemetry { font-family: "SF Mono","Fira Code",monospace; font-size: 0.85em; background: #f6f6f6; border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px 16px; margin: 1em 0; line-height: 1.7; color: #b8860b; }
+.page .first-person { border: 1px solid #003366; border-radius: 8px; padding: 16px 20px; margin: 1em 0; background: rgba(0,51,102,0.04); }
+.page .first-person::before { content: "🎙 Cole 第一视角"; display: block; font-size: 0.7em; letter-spacing: 2px; color: #003366; margin-bottom: 0.5em; }
+.page .pit { border: 1px solid #e10600; border-radius: 8px; padding: 16px 20px; margin: 1em 0; background: rgba(225,6,0,0.03); }
+.page .pit::before { content: "🔧 维修区"; display: block; font-size: 0.7em; letter-spacing: 2px; color: #e10600; margin-bottom: 0.5em; }
+.page .divider { text-align: center; color: #ccc; margin: 1.5em 0; font-size: 1.2em; }
+.page .center { text-align: center; }
+.page .end-mark { text-align: center; font-size: 2em; margin-top: 2em; color: #e10600; }
+
+#topbar { position: fixed; top: 0; left: 0; right: 0; height: 36px; background: #f5f5f7; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 500; font-size: 0.72em; letter-spacing: 1px; }
+#topbar .left { color: #e10600; font-weight: 700; }
+#topbar .center { color: #666; }
+#topbar .right { color: #003366; font-weight: 600; }
+#topbar .back { color: #888; text-decoration: none; }
+#topbar .back:hover { color: #e10600; }
+
+#bottombar { position: fixed; bottom: 0; left: 0; right: 0; height: 56px; background: #f5f5f7; border-top: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: center; gap: 16px; z-index: 500; }
+#bottombar button { background: #fff; color: #1a1a1a; border: 1px solid #ccc; padding: 8px 24px; font-size: 0.9em; border-radius: 4px; cursor: pointer; transition: all 0.15s; user-select: none; }
+#bottombar button:hover { background: #003366; border-color: #003366; color: #fff; }
+#bottombar button:disabled { opacity: 0.3; cursor: default; }
+#bottombar button:hover:disabled { background: #fff; border-color: #ccc; color: #1a1a1a; }
+#page-indicator { color: #888; font-size: 0.8em; min-width: 60px; text-align: center; }
+
+#music-bar { position: fixed; bottom: 70px; right: 16px; display: flex; flex-direction: column; align-items: center; gap: 4px; background: #f5f5f7; border: 1px solid #e0e0e0; border-radius: 20px; padding: 10px 14px; z-index: 99999; font-size: 0.75em; color: #666; box-shadow: 0 2px 8px rgba(0,0,0,0.08); pointer-events: auto; }
+#music-bar button { background: none; border: none; cursor: pointer; font-size: 1.3em; padding: 4px 8px; color: #e10600; transition: transform 0.1s; pointer-events: auto; touch-action: manipulation; -webkit-tap-highlight-color: rgba(225,6,0,0.2); }
+#music-bar button:hover { transform: scale(1.2); }
+#music-bar input[type="range"] { width: 60px; height: 3px; -webkit-appearance: none; appearance: none; background: #ddd; border-radius: 2px; outline: none; pointer-events: auto; }
+#music-bar input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #e10600; cursor: pointer; }
+#music-status { font-size: 0.7em; color: #aaa; min-width: 50px; text-align: center; }
+#music-hint { font-size: 0.65em; color: #bbb; letter-spacing: 1px; white-space: nowrap; }
+
+.page::-webkit-scrollbar { width: 4px; }
+.page::-webkit-scrollbar-track { background: transparent; }
+.page::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+
+.page .speed { font-family: "SF Mono", monospace; font-size: 4em; font-weight: 900; color: #111; line-height: 1; }
+.page .gforce { font-family: "SF Mono", monospace; font-size: 3.5em; font-weight: 900; color: #e10600; line-height: 1; }
+</style>
+</head>
+<body>
+
+<audio id="bgm" preload="auto" loop>
+  <source src="nascar.mp3" type="audio/mpeg">
+</audio>
+
+<div id="topbar">
+  <div class="left">#42 CHEVROLET CAMARO ZL1 · MADDOCK RACING</div>
+  <div class="center" id="clock">LAP 1 / 190</div>
+  <div class="right"><a class="back" href="index.html">← 回主页</a> · <span id="chapter-title">封面</span></div>
+</div>
+
+<div id="book">
+
+<!-- 封面 -->
+<div class="page active">
+  <div class="center" style="margin-top:12vh">
+    <img src="cover-nascar.png" alt="塔拉迪加封面" style="width:100%;max-width:640px;border-radius:10px;margin-bottom:1.5em;">
+    <div class="label">NASCAR Cup Series · 塔拉迪加超级赛道</div>
+    <h1 style="font-size:3.2em;margin-top:0.3em;">塔拉迪加<br>第九行</h1>
+    <div style="font-size:1.3em;color:#e10600;margin:0.5em 0 0.3em;">钢铁与肘击</div>
+    <div style="font-size:0.9em;color:#888;">2.66 英里 · 33 度 banking · 四十台 V8</div>
+    <div class="divider">───</div>
+    <p style="font-size:0.85em;color:#999;margin-top:1em;">Rubbin' is racin'. 蹭是比赛的一部分。</p>
+  </div>
+</div>
+
+<!-- P2: 先说一件事 -->
+<div class="page">
+  <h2>先说一件事</h2>
+  <p>如果你不懂赛车，这篇正好是为你写的。</p>
+  <p>你只需要知道一件事：<strong style="color:#e10600;">四十台车挤在一起跑，谁先冲过终点谁赢。</strong>中间怎么挤的、怎么蹭的、怎么拿锤子砸车的——那就是故事。</p>
+  <div class="divider">───</div>
+  <p style="font-size:0.9em;color:#888;">下面几页会把术语用人话翻译一遍。看不懂就跳过，直接进第一章——故事本身不用预习。</p>
+</div>
+
+<!-- P3: 车 -->
+<div class="page">
+  <h2>车</h2>
+  <div class="label">雪佛兰 Camaro ZL1 · 下一代赛车（Next Gen）</div>
+  <div class="telemetry">
+动力：5.86L 自然吸气 V8 · 670hp（装了限流器后约 450hp）<br>
+重量：1520kg · 钢车架 + 钢管防滚笼 · 无内饰无空调无副驾座椅<br>
+变速箱：四速序列式<br>
+无助力转向（打方向纯靠臂力）<br>
+无ABS · 无牵引力控制<br>
+油箱：60L · 油耗约 2.8-3.0L/圈<br>
+轮胎：固特异光头胎 · 左硬右软 · 右前跑百圈会起泡
+  </div>
+  <p>它看起来像路上的科迈罗，只是"看起来"。真正的名字是 <strong>Camaro ZL1 Next Gen</strong>——2022 年 NASCAR 换的新规则，更安全的铁疙瘩。</p>
+  <p><strong>5.86 升 V8，自然吸气</strong>——没有涡轮，没有电机帮忙，纯靠气缸大口吞空气和汽油。声音像雷，踩油门时整个屁股下面的车都在震。</p>
+  <p><strong>本来 670 匹，被掐到 450 匹</strong>——因为塔拉迪加太快了。上次没掐的时候有人跑到了 355km/h 然后飞起来了，字面意思：飞起来、翻了十几圈。所以现在所有人速度差不多，挤成一坨。</p>
+  <p><strong>没有助力转向</strong>——打方向盘纯靠臂力。塔拉迪加一圈 2.66 英里，每个弯都是 33 度斜坡，离心力把你往一边甩，你一边对抗离心力一边打方向。跑完一场比赛，车手肩膀比健身一天还酸。</p>
+  <p><strong>没有 ABS，没有牵引力控制</strong>——刹车踩猛了轮胎抱死，方向盘抖，只能自己感觉"快锁了"然后松一点。出弯给油猛了后轮打滑，车屁股甩出去，得自己救。</p>
+  <p><strong>轮胎</strong>——固特异光头胎。左前胎跑一整场不换，右前胎磨损快得多：因为塔拉迪加所有弯都往同一个方向转，右侧轮胎一直在承受横向力。想象穿着鞋一直往右边滑步，右脚鞋底肯定先磨穿。</p>
+  <div class="speed">670 HP → 450</div>
+  <div class="label" style="margin-top:0.2em;">掐住喉咙的 V8</div>
+</div>
+
+<!-- P4: 人 -->
+<div class="page">
+  <h2>人</h2>
+  <div class="telemetry">
+<b style="color:#e10600;">Cole "Hammer" Maddox</b> — 车手。31岁。外号来源：第一次赢比赛的时候把对手挤到墙上去的。他说不是故意的。队友不信。<br>
+<b style="color:#003366;">Dean "Wrench" Corso</b> — 维修区老大。指甲缝里永远有黑色油污。工具箱里有一把大锤。不是摆设。<br>
+<b style="color:#b8860b;">Big Mack</b> — 车队老板。五十多岁，永远穿花衬衫，永远嚼口香糖。不怎么看数据，信运气。<br>
+<b style="color:#666;">Riley Voss</b> — 二车手/策略分析。年轻，戴眼镜，看电脑比摸方向盘多。
+  </div>
+  <div class="quote">
+"赛道上没朋友。"<br>——Cole，每次被问到跟对手关系时都这么说
+  </div>
+</div>
+
+<!-- P5: 四十台车挤在一起 -->
+<div class="page">
+  <h2>第一章 · 四十台车挤在一起是什么感觉</h2>
+  <p>塔拉迪加超级赛道，阿拉巴马州。一圈 2.66 英里，直道长到你从一头出发踩死油门，要十几秒才到另一头。</p>
+  <p><strong>绿灯。</strong></p>
+  <p>四十台 V8 同时咆哮。每台 450 匹马力，加起来一万八千匹。声音大到站在看台上不戴耳塞，第二天耳朵嗡嗡响。</p>
+  <p>Cole 在第 14 位发车，中间。</p>
+  <p>从 0 到 310km/h，十秒出头。然后它们挤在一起。</p>
+  <div class="quote">
+四十台车挤在一起之后发生的事，用一句话概括：空气变成了一条看不见的绳子，把所有人捆成一团。
+  </div>
+  <p>原理是这样的：第一台车破风，后面的车躲在它后面，风阻小，反而更快。两台车贴一起比单车快。三台四台串成一列，叫 "train"（火车）。所以没有人愿意单独跑——单独跑等于你在前面帮所有人破风，后面的人吸你尾流轻松超你。</p>
+  <p>结果就是：四十台车挤成三四条线，每台车间距不到一米，速度 310km/h，谁也不让谁。</p>
+  <p>Cole 右手搭方向盘，左臂撑着身体对抗离心力。耳机里 Big Mack：</p>
+  <p>"别急。前 15 圈所有人都在试探。等黄旗。"</p>
+  <p>"等黄旗干嘛？"</p>
+  <p>"黄旗出来，pack（集团）散开，重启之后大家轮胎温度不一样，有人会滑。那就是你的窗口。"</p>
+</div>
+
+<!-- P6: 合理碰撞 -->
+<div class="page">
+  <h2>第二章 · 合理碰撞</h2>
+  <p>第 23 圈。Cole 第 9 位。前面是 #18（Travis Kellogg，外号 T-Bone）。</p>
+  <p>T-Bone 在直道上开始左右摆——他在 <strong>block（封堵）</strong>，不让后面的人超。封堵在 NASCAR 是合法的：你领先，可以左右晃守住走线。但晃太大就犯规——不过"太大"的定义很模糊，所以很多人晃得跟蛇一样。</p>
+  <p>Cole 跟了两圈，发现规律：T-Bone 每次摆到右边之后，回正总是慢半拍。</p>
+  <p>第 25 圈，直道末端。T-Bone 照例往右摆。回正慢了。</p>
+  <p>Cole 把方向盘往左打了两英寸。</p>
+  <p><strong>不是超车。是"贴上去"。</strong></p>
+  <p>右前保险杠角，轻轻碰到了 T-Bone 的左后四分之一面板。</p>
+  <p>不是撞。是"靠"。</p>
+  <p>你可能会问：这也能行？在 NASCAR 能行，而且是一种战术。</p>
+  <p>两台车并排时，中间气流被压缩形成低压区，空气把两台车往中间吸。你贴上去，前面那台方向盘会变重——因为后轮搅出的乱风打在你车头，推着你往他身上靠，同时他的车也被你的车"拉"着往这边偏。</p>
+  <p>T-Bone 感觉到了。方向盘抖了一下。他必须多打两度方向来抵抗。</p>
+  <p>合法。这叫 <strong>side draft（侧方尾流）</strong>。你没撞他，你只是"贴"着他。但他必须多打方向。多打方向 = 轮胎多滑动 = 轮胎磨损加速。</p>
+  <p>Cole 没超他。就贴了三四个弯。到第 28 圈，T-Bone 的轮胎撑不住了——额外磨损让胎温过了甜区。他进了维修区。Cole 升到第 6。</p>
+  <div class="telemetry">
+右前胎温：T-Bone 138℃ / 正常应 125℃<br>
+原因：额外方向修正 × 4圈 = 胎温 +13℃<br>
+结果：进站
+  </div>
+</div>
+
+<!-- P7: 暴力维修 -->
+<div class="page">
+  <h2>第三章 · 暴力维修</h2>
+  <p>第 47 圈。出事了。</p>
+  <p>前面 pack 里有人打滑，连锁反应。十二台车挤在直道上，前面一台突然刹车，后面躲。左边 #4 车横着甩出来。</p>
+  <p>Cole 踩刹车 + 方向往右打死。右前撞上旁边 #17 车的左后。</p>
+  <p><strong>砰。</strong></p>
+  <p>不是轻蹭。是正经撞。金属撞金属的声音通过车架传到座椅，Cole 的牙齿磕在一起。</p>
+  <p>右前挡泥板凹进去一拳深。前分流器（车头下面贴地很近的塑料板）右角碎了，挂在那里像断了的门牙。散热器格栅歪了。</p>
+  <p>但引擎没灭。车还能跑。</p>
+  <p>"Pit this lap." Big Mack 的声音很平静，像在说"买杯咖啡"。</p>
+  <div class="pit">
+维修区是什么样的地方？想象一个加油站，但六个人同时冲上来，38 秒内要换四个轮胎、加满 60 升油、修好被撞坏的车头。而且隔壁车道同时在干同样的事。<br><br>
+车停稳。计时开始。<br><br>
+两个技师拆右前轮——凹进去的挡泥板卡住了轮胎，转不动。<br><br>
+Dean 看了一眼。从地上抄起<strong>一把大锤</strong>。不是比喻。真的大锤。铁头木柄，约三公斤。<br><br>
+Dean 走到车头右前，抡起来，一锤砸在凹进去的挡泥板上。<br><br>
+<strong>铛。</strong><br><br>
+金属回弹了半寸。还卡。再一锤。<br><br>
+<strong>铛。</strong><br><br>
+这次够了。挡泥板弹回原位，不再蹭轮胎。<br><br>
+"走！"四胎换完。加油管拔掉。前分流器碎片被一把扯掉扔地上。<br><br>
+<strong>总耗时：38.4 秒。</strong><br><br>
+Cole 踩油门出去。挡风玻璃右边有一条裂缝——撞的时候碎片飞上来的。不影响视线。继续跑。
+  </div>
+  <p>"几锤？"</p>
+  <p>"两锤。第一锤不够狠。"</p>
+  <p>"下次直接三锤。"</p>
+  <p>"下次直接换件。"</p>
+  <p>"你没带备件。"</p>
+  <p>"……所以三锤。"</p>
+</div>
+
+<!-- P8: Pack 里的蛇 -->
+<div class="page">
+  <h2>第四章 · Pack 里的蛇</h2>
+  <p>第 78 圈。比赛过半。Cole 第 11 位。</p>
+  <p>塔拉迪加的 pack（集团）像活物。它"呼吸"——收紧、散开、再收紧。你在里面得学会滑。</p>
+  <p>原理很简单：你在 pack 中间，前后左右都有车。你唯一的空间是"别人让出来的缝"。但缝不是等来的，是"造"出来的。</p>
+  <p>怎么造？你贴前面那台车的左后方，他的方向盘会变重，被迫走线偏右，内线就空出来了，你切进去。或者你从外线走假装要超，前面的人一慌开始 block，他一摆方向走线就乱了，后面的人趁乱钻。</p>
+  <p>Riley："前面 #33 在省油。你贴他左后方，他会让你过。"</p>
+  <p>"省油？跑到一半省什么油？"</p>
+  <p>"塔拉迪加一圈耗油约三升，油箱六十升，理论上够跑二十圈。但你一直在前面破风，油耗多 20%。他在省油就不敢全油，走线保守，你贴上去他不会跟你较劲。"</p>
+  <p>Cole 照做了。贴到 #33 左后方。果然，#33 没 block。Cole 从内线过去。过了。</p>
+  <p>"就这么简单？"</p>
+  <p>"就这么简单。他不想在前面吃风，你上去他反而舒服——有人帮他破风了。"</p>
+  <p>"那我成好人了？"</p>
+  <p>"你成靶子了。现在你在前面，后面的人吸你尾流。"</p>
+</div>
+
+<!-- P9: 轮胎的尽头 -->
+<div class="page">
+  <h2>第五章 · 轮胎的尽头</h2>
+  <p>第 112 圈。出问题了。</p>
+  <p>固特异的右前胎开始 <strong>起泡（blistering）</strong>。</p>
+  <p>起泡是什么意思？轮胎在高速过弯时，橡胶表面因为过热与里面帘布层分离，表面鼓出一个个水泡。像脚上磨出水泡。水泡一旦破了，轮胎就废了。</p>
+  <p>前面 #88 车的右前爆了。不是慢撒气——是瞬间爆。车头往右扎。#88 车手本能反打方向，但 NASCAR 没有助力、没有 ABS，车尾甩出去，横在赛道上。</p>
+  <p>后面五台车连环避让。两台撞墙。三台擦过去。</p>
+  <p><strong>黄旗。</strong></p>
+  <p>黄旗的意思：全场限速跟安全车，不能超车，大家排成一列慢慢跑。</p>
+  <p>对车手是喘息时间。对车队是<strong>窗口</strong>——因为大家都在减速，你进站修车换胎加油损失的时间少很多。</p>
+  <p>Big Mack："黄旗窗口。进不进？"</p>
+  <p>Cole 看胎温：右前 142℃——已经起泡。左前 118℃，还行。</p>
+  <p>"进。四胎。"</p>
+  <p>第二次进站，没有撞车要修，纯换胎加油。<strong>32.1 秒。</strong>出站，黄旗还在，pack 重新排队。Cole 第 14 位。</p>
+  <p>"重启后前五圈最乱。" Big Mack。"所有人轮胎都是新的，都敢踩。前面会有人锁胎。"</p>
+  <p>"锁胎是什么？"</p>
+  <p>"刹车踩太猛，轮胎抱死不转了，车在路面上滑。没有 ABS，只能自己感觉然后松一点。但重启后大家都兴奋，有人会踩过头。"</p>
+</div>
+
+<!-- P10: 重启 -->
+<div class="page">
+  <h2>第六章 · 重启</h2>
+  <p>绿旗重启。第 118 圈。安全车进 pit lane，绿灯亮。</p>
+  <p>四十台车同时踩油门。比起跑还猛——所有人都刚换新胎，抓地力满的，都敢踩。</p>
+  <p>Cole 第 14 位。前面十三台车在第一个弯道挤成两条线。</p>
+  <p><strong>第一圈。</strong>前面 #3 锁胎了——刹车踩太猛，前轮抱死，在斜坡上滑了十米。后面三台车被迫变线。Cole 从外线绕过去，超了两台。第 12 位。</p>
+  <p><strong>第二圈。</strong>前面 pack 开始 block。领先者左右摆，后面急了，开始内外线同时超。Cole 在中间线，左边有人超，右边有人超，他夹在中间，方向盘左右各打五度保持不碰。</p>
+  <p>"别碰。" Big Mack。"碰了你就得第三次进站。现在没时间。"</p>
+  <p><strong>第三圈。</strong>前面 #7 车尾开始抖——他在省油，出弯油门只给 70%。Cole 贴上去，side draft 吸住他。#7 方向盘变重，不得不补油抵抗。</p>
+  <p>"你刚毁了一个人的省油策略。" Riley 笑。</p>
+  <p>"他活该。"</p>
+</div>
+
+<!-- P11: 最后一箱油 -->
+<div class="page">
+  <h2>第七章 · 最后一箱油</h2>
+  <p>第 167 圈。还剩 15 圈。Cole 第 3 位。前面是 #14 Calloway 和 #2 Morales。</p>
+  <p>油表：剩 18%。</p>
+  <div class="telemetry">
+油箱：60L（上次进站只加了 55L，差量加油）<br>
+剩油：约 25L<br>
+15圈所需：约 43.5L<br>
+缺口：约 18.5L
+  </div>
+  <p>"Mack。油不够。"</p>
+  <p>"我知道。最后五圈切省油模式。你跟 #14 的尾流，风阻少 30%，油耗少 20%。够。"</p>
+  <p>"如果 #14 block 我呢？"</p>
+  <p>"那你就撞他。"</p>
+  <p>"合法？"</p>
+  <p>"最后五圈干事不管。干事想的是怎么收比赛。你俩撞了只要不翻车，他不管。"</p>
+</div>
+
+<!-- P12: 最后五圈 -->
+<div class="page">
+  <h2>第八章 · 最后五圈</h2>
+  <p>第 170 圈。最后五圈。Cole 第 2 位，跟在 Calloway 后面 0.3 秒。</p>
+  <p>前面就是他。只要过他，就是第一。</p>
+  <p>Calloway 开始 block。左右摆，幅度越来越大。</p>
+  <p>第 171 圈，直道。Calloway 往右摆。Cole 跟到右边。Calloway 突然回左。</p>
+  <p>Cole <strong>没</strong>跟到右边——他留在中线偏左。Calloway 回左的时候，Cole 已经在左边等着了。</p>
+  <p>右前贴上 Calloway 的左后。</p>
+  <p>侧风吸力启动。Calloway 方向盘往右偏，必须多打方向抵抗。</p>
+  <p>弯道入口。Calloway 因为 push 被迫走线偏宽，内线露出来了。</p>
+  <p>Cole 切内线。鼻翼先进，车身过半。</p>
+  <p>Calloway 没让。车尾甩了一下——他踩了刹车。后轮飘了。正好挡住外线。</p>
+  <p>Cole 已经在内线了。过去。</p>
+  <div class="gforce">P1</div>
+  <div class="label">第 1 位 · 还剩两圈</div>
+</div>
+
+<!-- P13: 最后两圈 -->
+<div class="page">
+  <h2>第九章 · 最后两圈</h2>
+  <p>第 1 位。但 Morales 在后面追。还有 #7 和 #33 也上来了。四台车挤在 0.8 秒内。</p>
+  <p>最后半圈，最长的直道。</p>
+  <p>Cole 全油。320km/h。方向盘在抖——第 47 圈撞过一次，前悬挂可能微变形。</p>
+  <p>后视镜里 Morales 在右后方吃尾流，准备从外线超。</p>
+  <p>Cole 留了外线"开着"。</p>
+  <p><strong>诱饵。</strong></p>
+  <p>Morales 果然走外线。直道末端，刹车区。</p>
+  <p>Morales 晚刹，从外线钻进来。</p>
+  <p>但 Cole <strong>提前</strong>刹车了——比正常早五米。</p>
+  <p>Morales 以为他晚刹，结果 Cole 早刹了。Morales 刹重了。前轮尖叫，后轮飘。</p>
+  <p>Cole 已经过了刹车点。进最后一个弯。内线。apex。出弯。</p>
+  <p>全油。直道。终点线。</p>
+  <p>冲。</p>
+</div>
+
+<!-- P14: 冲线 -->
+<div class="page">
+  <h2>冲线</h2>
+  <div class="center" style="margin-top:8vh">
+    <div class="label">塔拉迪加 · 188 圈</div>
+    <div class="big">P1</div>
+    <div style="font-size:1.2em;color:#e10600;margin:0.5em 0;">#42 Maddock Racing</div>
+    <div style="font-size:1em;color:#888;">Chevrolet Camaro ZL1 · 0.14秒优势</div>
+    <div class="divider">───</div>
+    <p style="margin-top:1.5em;">引擎从咆哮变成喘息。</p>
+    <p>Cole 把车开回维修区出口，举起一只手。</p>
+    <p>后视镜里：Morales 第二，差 0.14 秒。#7 第三，差 0.31 秒。</p>
+    <p>Big Mack 在无线电里没喊。就一句："Good job."</p>
+    <p>Dean 走过来，手里还拎着那把大锤。</p>
+    <p>"这锤子值多少钱？"</p>
+    <p>"租的。"</p>
+    <p>Riley："最后那下 block 我看了。你早刹了五米？"</p>
+    <p>"四米。"</p>
+    <p>"Morales 以为你晚刹。"</p>
+    <p>"他以为很多事。"</p>
+    <p>Big Mack 嚼完最后一块口香糖："知道你赢在哪吗？"</p>
+    <p>"最后五圈油够。"</p>
+    <p>"不是。是你第 47 圈被撞了没退。那两锤子值一台车。"</p>
+  </div>
+</div>
+
+<!-- P15: 尾声 -->
+<div class="page">
+  <h2>尾声 · 为什么 NASCAR 值得看</h2>
+  <p>你问一个 NASCAR 车迷为什么喜欢看，他大概率不会跟你讲技术。他会说：</p>
+  <div class="quote">
+"因为那台车撞了，他们拿锤子砸了砸，又出去跑了。"<br>
+"因为四十台车挤在一起，310km/h，差一英寸就撞，但没撞。"<br>
+"因为最后两圈比前面 188 圈都好看。"
+  </div>
+  <p>NASCAR 不精密。它不优雅。它不环保。它是一群人在一条椭圆赛道上开大马力铁疙瘩互相挤，谁先到谁赢。</p>
+  <p>但它真实。</p>
+  <p>没有电脑帮你。没有混动系统回收能量。没有弹射起步。你踩多少油门轮胎就转多快。撞了，拿锤子敲回去，继续跑。</p>
+  <p><strong>Rubbin' is racin'.</strong></p>
+  <p>蹭是比赛的一部分。撞了不翻就继续。翻了……翻了明年再来。</p>
+  <p>这就是塔拉迪加。</p>
+  <div class="end-mark">🏁</div>
+  <p style="text-align:center;font-size:0.8em;color:#999;margin-top:1.5em;">塔拉迪加超级赛道 · NASCAR Cup Series · 2.66英里 · 33度 banking<br>虚构人物 / 虚构赛事 · 致敬真实存在的维修区大锤</p>
+</div>
+
+<!-- P16: 术语速查 -->
+<div class="page">
+  <h2>术语速查</h2>
+  <div class="telemetry">
+<b>Draft / 尾流</b>：跟在前车后面，风阻减小，尾速多2-3km/h；贴一起比单车快<br>
+<b>Side draft</b>：贴旁边车的侧后方，中间形成低压把两台车往中间吸，前车方向盘变重<br>
+<b>Block</b>：领先者左右晃守住走线，合法但幅度有争议<br>
+<b>Train</b>：多台车串成一列，后面的都吃前车尾流<br>
+<b>Pack</b>：挤在一起的集团，塔拉迪加能有二三十台<br>
+<b>Blistering</b>：轮胎表面橡胶因过热与帘布层分离，鼓水泡，破了就废<br>
+<b>Locked brakes / 锁胎</b>：刹车踩太猛轮胎抱死不转，车在路面上滑；没有ABS只能自己感觉<br>
+<b>Banking</b>：斜坡弯道，塔拉迪加33度，离心力把人压在车门上<br>
+<b>Yellow flag / 黄旗</b>：全场限速跟安全车，是进站窗口<br>
+<b>The Big One</b>：大撞。前面一台滑了，后面连锁，十几台车撞成一锅<br>
+<b>Tapered spacer / 限流器</b>：装在进气口掐马力的铁片，为了把大家速度压近<br>
+<b>Next Gen</b>：NASCAR 2022年起用的新一代赛车规则，更安全更暴力<br>
+<b>Stagger</b>：左硬右软的轮胎搭配，应对全同向弯道<br>
+<b>Pit road</b>：维修区。换胎加油修车同时进行，约12人服务一台车
+  </div>
+</div>
+
+</div>
+
+<div id="bottombar">
+  <button id="prevBtn" onclick="prevPage()">← 上一页</button>
+  <span id="page-indicator">1 / 16</span>
+  <button id="nextBtn" onclick="nextPage()">下一页 →</button>
+</div>
+
+<div id="music-bar">
+  <button id="playPauseBtn" onclick="toggleMusic()" title="播放/暂停">▶</button>
+  <input type="range" id="volumeSlider" min="0" max="100" value="60" oninput="setVolume(this.value)">
+  <span id="music-status">暂停</span>
+  <span id="music-hint">点击播放配乐</span>
+</div>
+
+<script>
+const audio = document.getElementById('bgm');
+const playPauseBtn = document.getElementById('playPauseBtn');
+const musicStatus = document.getElementById('music-status');
+let isPlaying = false;
+const GAP = 1500;
+audio.volume = 0.6;
+
+audio.addEventListener('ended', () => {
+  if (isPlaying) {
+    musicStatus.textContent = '间隔...';
+    setTimeout(() => { audio.currentTime = 0; audio.play(); musicStatus.textContent = '播放中'; }, GAP);
+  }
+});
+function toggleMusic() {
+  if (isPlaying) { audio.pause(); isPlaying = false; playPauseBtn.textContent = '▶'; musicStatus.textContent = '暂停'; }
+  else { audio.play().then(() => { isPlaying = true; playPauseBtn.textContent = '⏸'; musicStatus.textContent = '播放中'; }).catch(e => { musicStatus.textContent = '失败:' + e.name; console.error(e); }); }
+}
+function setVolume(v) { audio.volume = v / 100; }
+
+let currentPage = 0;
+const pages = document.querySelectorAll('.page');
+const totalPages = pages.length;
+const chapterNames = ["封面","先说一件事","车","人","四十台车","合理碰撞","暴力维修","Pack里的蛇","轮胎尽头","重启","最后一箱油","最后五圈","最后两圈","冲线","尾声","术语速查"];
+let lastFlipTime = 0;
+const FLIP_COOLDOWN = 220;
+function canFlip() { const n = Date.now(); if (n - lastFlipTime < FLIP_COOLDOWN) return false; lastFlipTime = n; return true; }
+function showPage(n) {
+  pages.forEach((p,i) => p.classList.toggle('active', i === n));
+  document.getElementById('page-indicator').textContent = (n+1) + ' / ' + totalPages;
+  document.getElementById('chapter-title').textContent = chapterNames[n];
+  document.getElementById('prevBtn').disabled = (n === 0);
+  document.getElementById('nextBtn').disabled = (n === totalPages - 1);
+}
+function nextPage() { if (currentPage < totalPages - 1 && canFlip()) { currentPage++; showPage(currentPage); } }
+function prevPage() { if (currentPage > 0 && canFlip()) { currentPage--; showPage(currentPage); } }
+
+let spacePressed = false;
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') { e.preventDefault(); nextPage(); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); prevPage(); }
+  if (e.key === ' ') { e.preventDefault(); if (!spacePressed) { spacePressed = true; nextPage(); } }
+});
+document.addEventListener('keyup', e => { if (e.key === ' ') spacePressed = false; });
+
+let tsX = 0, tsY = 0, moved = false;
+document.addEventListener('touchstart', e => { tsX = e.touches[0].clientX; tsY = e.touches[0].clientY; moved = false; }, {passive:true});
+document.addEventListener('touchmove', e => { if (Math.abs(e.touches[0].clientX-tsX)>10 || Math.abs(e.touches[0].clientY-tsY)>10) moved = true; }, {passive:true});
+document.addEventListener('touchend', e => {
+  if (!moved) return;
+  let dx = e.changedTouches[0].clientX - tsX, dy = Math.abs(e.changedTouches[0].clientY - tsY);
+  if (Math.abs(dx) > 90 && Math.abs(dx) > dy * 2) { if (dx < 0) nextPage(); else prevPage(); }
+});
+
+let lap = 1;
+setInterval(() => { if (lap < 190) lap++; document.getElementById('clock').textContent = 'LAP ' + lap + ' / 190'; }, 800);
+
+showPage(0);
+</script>
+</body>
+</html>

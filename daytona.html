@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>戴通纳，九十号：四双手</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+  background: #ffffff;
+  color: #1a1a1a;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0;
+  width: 6px; height: 100%;
+  background: linear-gradient(to bottom, #0047AB 0%, #0047AB 50%, #d63384 50%, #d63384 100%);
+  z-index: 1000;
+}
+
+#book {
+  width: 92vw;
+  max-width: 960px;
+  height: 88vh;
+  position: relative;
+}
+
+.page {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  padding: 48px 56px 80px;
+  overflow-y: auto;
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
+}
+.page.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+.page h1 {
+  font-size: 2.4em;
+  font-weight: 900;
+  letter-spacing: 2px;
+  margin-bottom: 0.3em;
+  color: #111;
+}
+.page h2 {
+  font-size: 1.4em;
+  font-weight: 700;
+  margin: 1.2em 0 0.5em;
+  color: #d63384;
+}
+.page h3 {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin: 1em 0 0.4em;
+  color: #0047AB;
+}
+.page p {
+  font-size: 1.02em;
+  line-height: 1.85;
+  margin-bottom: 0.9em;
+  color: #2a2a2a;
+}
+.page .big {
+  font-size: 3.2em;
+  font-weight: 900;
+  color: #d63384;
+  line-height: 1;
+  margin: 0.2em 0;
+  font-variant-numeric: tabular-nums;
+}
+.page .label {
+  font-size: 0.75em;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: 0.3em;
+}
+.page .quote {
+  border-left: 3px solid #d63384;
+  padding: 0.6em 1em;
+  margin: 1em 0;
+  background: rgba(214,51,132,0.05);
+  font-style: italic;
+  color: #444;
+}
+.page .telemetry {
+  font-family: "SF Mono", "Fira Code", monospace;
+  font-size: 0.85em;
+  background: #f6f6f6;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin: 1em 0;
+  line-height: 1.7;
+  color: #b8860b;
+}
+.page .first-person {
+  border: 1px solid #0047AB;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin: 1em 0;
+  background: rgba(0,71,171,0.04);
+}
+.page .first-person::before {
+  content: "🎙 第一视角";
+  display: block;
+  font-size: 0.7em;
+  letter-spacing: 2px;
+  color: #0047AB;
+  margin-bottom: 0.5em;
+}
+.page .divider {
+  text-align: center;
+  color: #ccc;
+  margin: 1.5em 0;
+  font-size: 1.2em;
+}
+.page .center { text-align: center; }
+.page .end-mark {
+  text-align: center;
+  font-size: 2em;
+  margin-top: 2em;
+  color: #d63384;
+}
+
+#topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 36px;
+  background: #f5f5f7;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 500;
+  font-size: 0.72em;
+  letter-spacing: 1px;
+}
+#topbar .left { color: #d63384; font-weight: 700; }
+#topbar .center { color: #666; }
+#topbar .right { color: #0047AB; font-weight: 600; }
+
+#bottombar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 56px;
+  background: #f5f5f7;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 500;
+}
+#bottombar button {
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid #ccc;
+  padding: 8px 24px;
+  font-size: 0.9em;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+#bottombar button:hover {
+  background: #0047AB;
+  border-color: #0047AB;
+  color: #fff;
+}
+#bottombar button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+#bottombar button:hover:disabled {
+  background: #fff;
+  border-color: #ccc;
+  color: #1a1a1a;
+}
+#page-indicator {
+  color: #888;
+  font-size: 0.8em;
+  min-width: 60px;
+  text-align: center;
+}
+
+/* 音乐控制栏 */
+#music-bar {
+  position: fixed;
+  bottom: 64px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f5f5f7;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  padding: 6px 14px;
+  z-index: 400;
+  font-size: 0.75em;
+  color: #666;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+#music-bar button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1em;
+  padding: 2px 4px;
+  color: #d63384;
+  transition: transform 0.1s;
+}
+#music-bar button:hover { transform: scale(1.2); }
+#music-bar input[type="range"] {
+  width: 60px;
+  height: 3px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #ddd;
+  border-radius: 2px;
+  outline: none;
+}
+#music-bar input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #d63384;
+  cursor: pointer;
+}
+#music-status {
+  font-size: 0.7em;
+  color: #aaa;
+  min-width: 50px;
+  text-align: right;
+}
+
+.page::-webkit-scrollbar { width: 4px; }
+.page::-webkit-scrollbar-track { background: transparent; }
+.page::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+
+.page .speed {
+  font-family: "SF Mono", monospace;
+  font-size: 4em;
+  font-weight: 900;
+  color: #111;
+  line-height: 1;
+}
+.page .gforce {
+  font-family: "SF Mono", monospace;
+  font-size: 3.5em;
+  font-weight: 900;
+  color: #d63384;
+  line-height: 1;
+}
+
+#music-bar { position: fixed !important; bottom: 70px !important; right: 16px !important; display: flex !important; flex-direction: column !important; align-items: center !important; gap: 4px !important; background: #f5f5f7 !important; border: 1px solid #e0e0e0 !important; border-radius: 20px !important; padding: 10px 14px !important; z-index: 99999 !important; font-size: 0.75em !important; color: #666 !important; box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important; pointer-events: auto !important; }
+#music-bar button { background: none; border: none; cursor: pointer; font-size: 1.3em; padding: 4px 8px; color: #d63384; transition: transform 0.1s; pointer-events: auto !important; touch-action: manipulation; -webkit-tap-highlight-color: rgba(214,51,132,0.2); }
+#music-bar button:hover { transform: scale(1.2); }
+#music-bar input[type="range"] { width: 60px; height: 3px; -webkit-appearance: none; appearance: none; background: #ddd; border-radius: 2px; outline: none; pointer-events: auto !important; }
+#music-bar input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #d63384; cursor: pointer; }
+#music-status { font-size: 0.7em; color: #aaa; min-width: 50px; text-align: center; }
+#music-hint { font-size: 0.65em; color: #bbb; letter-spacing: 1px; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<!-- 音频元素（不自动播放，等用户点播放） -->
+<audio id="bgm" preload="auto" loop>
+  <source src="daytona.mp3" type="audio/mpeg">
+</audio>
+
+<div id="topbar">
+  <div class="left">#90 PORSCHE 911 GT3 R · VERSTAPPEN.COM RACING</div>
+  <div class="center" id="clock">T-24:00:00</div>
+  <div class="right"><a class="back" href="index.html" style="color:#888;text-decoration:none;">&larr; 主页</a> &middot; <span id="chapter-title">封面</span></div>
+</div>
+
+<div id="book">
+
+<!-- P1: 封面 -->
+<div class="page active">
+  <div class="center" style="margin-top:9vh">
+    <img src="cover-daytona.png" alt="戴通纳封面" style="width:100%;max-width:600px;border-radius:10px;margin-bottom:1.4em;">
+    <div class="label">IMSA · 戴通纳24小时 · GTD Pro</div>
+    <h1 style="font-size:3.2em;margin-top:0.3em;">戴通纳<br>九十号</h1>
+    <div class="label">IMSA · 戴通纳24小时 · GTD Pro</div>
+    <h1 style="font-size:3.5em;margin-top:0.3em;">戴通纳<br>九十号</h1>
+    <div style="font-size:1.3em;color:#d63384;margin:0.5em 0 1.5em;">四双手</div>
+    <div class="divider">───</div>
+    <p style="margin-top:1em;font-size:0.9em;color:#888;">基于 Trends Hobby 241084(I) 实车原型</p>
+    <p style="font-size:0.85em;color:#999;">保时捷 911 GT3 R（992）· 蓝粉涂装 · Manthey 调校</p>
+    <div class="divider">───</div>
+    <p style="font-size:0.8em;color:#888;margin-top:2em;">赛场格局：GTP 原型车（全场总冠军）＋ GTD Pro / GTD（GT3）</p>
+    <p style="font-size:0.8em;color:#888;">策略指挥：老萨拉马（Sal）· 原型参照 IMSA 真实策略大师 Don Salama</p>
+  </div>
+</div>
+
+<!-- P2: 给不懂赛车的你 -->
+<div class="page">
+  <h2>给不懂赛车的你</h2>
+  <p>下面这些词会反复出现。花三十秒看完，后面全是享受：</p>
+  <div class="telemetry">
+戴通纳组别：GTP（原型车，争全场总冠军：凯迪拉克/宝马/保时捷963/讴歌）＋ GTD Pro ＋ GTD（都是GT3赛车）。我们这台90号跑 GTD Pro。<br><br>
+ABS（防抱死刹车）：GT3 没有。踩猛了轮胎锁死，方向盘抖，胎磨平。<br>
+TC（牵引力控制）：GT3 有但很弱。防后轮打滑，但介入晚，车尾仍会甩。<br>
+BoP（性能平衡）：赛会把快车的油箱缩小/尾翼调钝，让慢车能跟上。<br>
+Banked Turn：斜坡弯。车贴31度斜墙跑，离心力把人压在头枕上。<br>
+Infield：内场技术段。低速S弯+发卡弯，跟banking完全两种物理。<br>
+颗粒化：轮胎表面橡胶被磨成小颗粒，抓地力断崖下跌。<br>
+套圈：快车比慢车快一圈以上，从后面追上并超过慢车。<br>
+慢车：戴通纳里指被套圈的 GTD 组 GT3 客户车（青铜绅士车手），他们必须让 GTP 和 GTD Pro 车过。<br>
+Lean模式：省油喷油映射，少喷3%，出弯少踩，圈速几乎不丢。<br>
+差量加油：不补满，只加"够跑到下一窗"的量，省进站时间。<br>
+蓝旗：慢车必须让快车过，不让就罚。<br>
+安全车：全场限速跟车，用于清理事故，是策略翻盘窗口。<br>
+Stint：一位车手连续驾驶的一段，通常1.5-3小时。
+  </div>
+  <p style="font-size:0.85em;color:#888;">记住一句话：<strong style="color:#d63384;">24小时比赛不是比谁最快，是比谁最后还在跑、而且位置对。</strong></p>
+</div>
+
+<!-- P3: 四个人 -->
+<div class="page">
+  <h2>四个人，四种开法</h2>
+  <div class="telemetry">
+<b style="color:#d63384;">Max Verstappen</b> — 车手兼主调校。开法：凶。刹车晚、走线野、后轴微滑不慌。调了整台车。<br>
+<b style="color:#0047AB;">Dries Vanthoor</b> — 夜战。开法：准。走线像尺子，每圈误差不超0.3秒。<br>
+<b style="color:#b8860b;">Maro Engel</b> — 算油。开法：省。Lean模式、早收油、出弯85%油门，把油耗曲线压平。<br>
+<b style="color:#cc9900;">Sonny Hayes</b> — 老车手顾问/首棒。开法：稳。不追圈速，跑干净圈，探路况。<br>
+<b style="color:#e07b00;">老萨拉马（Sal）</b> — 策略指挥。不握方向盘，握窗口。信数据不信蛮力。
+  </div>
+  <div class="quote">
+"赢家不是最快的，是最后还在跑、而且位置对的那台。"<br>——Sal，策略会议结语
+  </div>
+</div>
+
+<!-- P4: 赛前策略会议 -->
+<div class="page">
+  <h2>赛前策略会议 · 周四夜</h2>
+  <p>戴通纳维修区。灯管嗡嗡响。90号保时捷引擎盖开着，热气往上蒸。四把折叠椅，战术板架轮胎上。</p>
+  <p>Sal把记号笔点在大屏上：</p>
+  <div class="quote">
+"二十四小时，不是二十四次排位赛。三个变量：油——每滴靠嘴省；胎——热熔胎甜区前81后79；位置——infield只有一条好线，被慢车挡半圈比慢两秒更致命。"
+  </div>
+  <p>他拿起磁贴，啪啪拍上白板——</p>
+  <div class="telemetry">
+<b>第1棒 14:00-18:00 · Sonny Hayes</b><br>
+任务：跑干净圈，探路况，记慢车分布。P3以内，不锁胎不切草。<br><br>
+<b>第2棒 18:00-22:00 · Verstappen</b><br>
+任务：从"稳"切到"凶"。吃banking内线，探对手刹车点。遇油膜先救车。<br><br>
+<b>第3棒 22:00-02:00 · Vanthoor</b><br>
+任务：尺子圈。夜战不丢节奏。被追用走线诱导，不硬顶。<br><br>
+<b>第4棒 02:00-06:00 · Engel</b><br>
+任务：算油。Lean模式，目标跳一窗。25圈再进。差量加油。<br><br>
+<b>第5棒 06:00-13:00 · Verstappen 收尾</b><br>
+任务：手术刀。最后两小时，油够胎够，人不准上头。
+  </div>
+  <p>Sal指着白板红字：</p>
+  <div class="quote">
+<b>半分钟代价</b><br>
+一次锁死 = 平斑 = 震动 = 多停2秒 × 20圈 = 输掉一个窗口<br>
+一次碰撞 = 直接回家
+  </div>
+  <p>"戴通纳不认明星，只认活下来的。"</p>
+</div>
+
+<!-- P5: 车 -->
+<div class="page">
+  <h2>车</h2>
+  <div class="label">保时捷 911 GT3 R · 992 代</div>
+  <div class="telemetry">
+动力：4.2L 水平对置六缸自吸 · 565hp · 无涡轮 · 无混动 · 无弹射<br>
+重量：1280kg · 后驱 · 后轴配重58%<br>
+空力：天鹅颈尾翼 · 前分流器 · 弯中下压力约280kg @ 200km/h<br>
+刹车：碳陶碟 · 无ABS · 前六后四活塞 · 100-0km/h 约28m<br>
+油箱：100L · BoP限油 · 油耗约3.2-3.4L/圈<br>
+轮胎：米其林热熔 · 前27.0psi · 后26.7psi · 甜区前81后79℃
+  </div>
+  <p>没有ABS意味着刹车是脚底读纹理。没有TC意味着出弯给油是跟物理掰腕子。没有混动意味着每一滴油都靠嘴省。</p>
+  <p>它不像GTP原型车那样有千套电子系统兜底。它是一台裸的、硬的、需要人跟它对话的机器。</p>
+  <div class="speed">565 HP</div>
+  <div class="label" style="margin-top:0.2em;">全部靠右脚和后轴之间的信任</div>
+</div>
+
+<!-- P6: 海耶斯首棒 -->
+<div class="page">
+  <h2>第一章 · 海耶斯（首棒 · 下午）</h2>
+  <div class="first-person">
+我：桑尼·海耶斯。四十一岁。左膝有旧伤。右手比左手稳。<br><br>
+坐进驾驶舱。安全带把我捆成砖。方向盘比家用车小一半，上面全是旋钮。<br><br>
+踩离合，按点火。屁股后面那台4.2升水平对置六缸醒了——嘶——咣咣咣咣。像钢锯锯铁管。没有涡轮，没有电机帮腔，踩多少给多少。<br><br>
+第一个弯之前先解释三件事：<br>
+一、刹车没ABS，我左脚踩不是"踩死"，是"摸"。踩到轮胎快抱死那条线，松一丝，再踩。像用手指捏住一只想跑的鸟。<br>
+二、转向硬，路面每颗石子传到掌心。<br>
+三、出弯给油不能猛，后轴在屁股后面压着，油给猛了后轮打滑，车尾往外甩。<br><br>
+出维修区，进一号弯。我晚刹半米。前轮尖叫，没锁。车头扎进弯心。出弯油门慢慢压——85%，不百分百。后轮咬住，没滑。<br><br>
+戴通纳的怪：前半段banking斜坡，300码，离心力把脖子往一边扯；突然甩进infield低速S弯。像刚在高速漂移，下一秒进菜市场巷子。<br><br>
+第2小时，我超了科尔维特。不是硬超。吃尾流，直道末端晚刹两米，从内线缝里钻过去。两个后视镜之间一拳距离。他按喇叭，我戴头盔，听不见。<br><br>
+路上还被慢车挡了一次——一台GTD组的兰博基尼客户车，青铜绅士车手，走线缩在中间。蓝旗在后面举了三轮他才让。我多花了半圈。<br><br>
+第4小时交车。熄火。摘头盔。汗顺着鬓角流进防火服。Max在车门边递水："走线干净。"<br>
+"你没锁胎。"<br>
+"我老了，锁不起。"
+  </div>
+</div>
+
+<!-- P7: Verstappen二棒 · 救车 -->
+<div class="page">
+  <h2>第二章 · Verstappen（二棒 · 傍晚转夜）</h2>
+  <div class="first-person">
+我：Max。平时开F1。今天开自己调的保时捷。<br><br>
+海耶斯调过的车我重新拧了半圈——往"活"的方向。后差减速锁止降了，前防倾杆硬了一档，TC只留一层晚介入。<br><br>
+上车。点火。平六缸在背后嘶叫。<br><br>
+出维修区第一圈，试刹车。banking斜坡，290码。进刹车区——左脚踩下去。不是踩，是"砸"。然后立刻收一丝。前轮没叫。再压一点。临界。<br><br>
+没有ABS的世界：脚底能感觉到轮胎从"滚"变成"要滑"的那0.1秒。滑了就抖，不滑就停得住。全靠左脚皮肉记着那个力度。<br><br>
+第6小时。infield第12弯。前面一台GTD组的阿斯顿·马丁客户车漏了油，弯心釉一样亮。不是他的错——是车的问题。但后果我来扛。<br><br>
+我刹车已经点了。右前压上去。<br><br>
+前轴抓地"咔"没了。车头往里扎，后轴往外甩。GT3 R屁股重，甩起来像被人在尾厢推了一把。<br><br>
+0.3秒决策：<br>
+不补刹。松油。方向反打12度，不跟车尾较劲。降一档，发动机刹把重量压回后轮。后轮重新咬地那瞬，油门前1/3给进去。<br><br>
+车尾横了半幅，鼻翼擦过粉色路肩，火星一闪。<br>
+没撞。没下草地。圈速慢0.9秒。<br><br>
+耳机里Sal没夸我："遥测横向G跳了0.6。前面漏油，别再压那条线。"<br>
+"不是我的错。"<br>
+"戴通纳到处是别人的错。你活着就行。"
+  </div>
+</div>
+
+<!-- P8: 手术刀超车 -->
+<div class="page">
+  <h2>手术刀超车 · 第15小时</h2>
+  <div class="label">荷兰手术刀 · 14次干净超车 · 零碰撞</div>
+  <div class="speed">2<span style="font-size:0.3em;color:#888;">INCH</span></div>
+  <div class="label" style="margin-bottom:1.5em;">最窄通过距离</div>
+  <div class="first-person">
+第15小时07分。追上一台法拉利296 GT3客户车，同组GTD Pro。直道尾流吃满。<br><br>
+刹车点。他走内线。我走中线偏外，晚刹三米。<br><br>
+前轮叫了。脉冲刹车：踩—松—踩—松。像心跳。<br><br>
+车头钻进内线和他之间的缝。他后视镜里突然多出一块蓝粉车头。往右缩——晚了。<br><br>
+过一个。没碰。两英寸。<br><br>
+第15小时34分。又来一台慢车——GTD组的兰博基尼Huracán GT3，走线缩在中间。我从外线绕过去，顺手把他套了。<br><br>
+第15小时52分。最险的一次。前面是台凯迪拉克GTP——原型车，直道比我快一大截，但infield里GT3能咬住。他进弯慢，我从内线贴过去，两个后视镜之间两拳距离。他后面看到了我，往右让了半米。<br><br>
+过了。出弯全油。后轮在路肩边缘打了一下滑，TC那一层弱介入点了一下。<br><br>
+无线电·Sal："Max，遥测横向G到了1.9。后轮差一点跳。"<br>
+"没跳。"<br>
+"差一点。"<br>
+"差一点就是没。"
+  </div>
+</div>
+
+<!-- P9: Vanthoor夜战 -->
+<div class="page">
+  <h2>第三章 · Vanthoor（夜战 · 凌晨）</h2>
+  <div class="first-person">
+我：Dries。他们说我夜战像尺子。<br><br>
+夜里戴通纳的infield是黑的。赛道灯把弯画成惨白，弯间是墨。你从亮冲进黑，看不见路肩，只能靠屁股记。<br><br>
+上车。第一圈不推。胎温从78往上爬。前81，后79。<br><br>
+第14弯我出弯慢了。下意识收油早——夜里凉，胎温掉得快，我在"保胎"。<br><br>
+耳机里突然不是工程师。是Max的声音：<br><br>
+"Dries。你在保路肩。别保。第14弯出弯晚1米，第17弯内线没吃。你跑斯帕雾里比这狠。差速降一档，早给油。"<br><br>
+我愣半秒。但照做了。<br><br>
+下一圈切内线，吃路肩边缘。后轮微滑，TC点一下收回。出弯油门90%。8分39。快了2秒。<br><br>
+凌晨三点。最烦的不是快，是慢车。一台GTD组保时捷客户车挡了我半圈，走线缩在中间，蓝旗举了四轮。最后在直道末端我切外线，从他右后贴过去——半个车身，没碰。<br><br>
+不是我挡他。是他自己走进我画的口袋。<br><br>
+交车前Max在墙边递水："第14弯回来就好。"<br>
+"你喊那么直，我不好意思不回来。"
+  </div>
+</div>
+
+<!-- P10: Engel算油 -->
+<div class="page">
+  <h2>第四章 · Engel（算油 · 凌晨中段）</h2>
+  <div class="first-person">
+我：Maro。他们叫我德国计算器。<br><br>
+上车第一眼：油量61%。<br><br>
+戴通纳一圈5.7公里，GT3 R每圈喝3.3升。标准stint 21圈。但科尔维特按标准窗停，我可以不按。<br><br>
+按Fuel Map到Lean。喷油少3%。每圈早收油150米，出弯只给85%油。<br><br>
+省油不是慢。是出弯少踩那脚油，胎不空转，时间几乎不丢，油表斜率变平。<br><br>
+第12小时03分：科尔维特进站。我不进。<br>
+多跑4圈。油表闪红灯。<br>
+第12小时11分进站：差量加油，不补满，不换胎。49秒。<br><br>
+出站大屏：<br>
+P1 · #90 Porsche 911 GT3 R<br>
+P2 · #3 Corvette +14秒<br><br>
+Sal："Maro，你刚才那四圈是数学赢的。"<br>
+"不。是Max调的Lean模式留的余地。"<br><br>
+交车前多跑两圈确认：车没抖，刹车没衰，油够。Max上车前拍我肩："你算得准。"<br>
+"不是我算得准。是你Lean模式留了余地。"
+  </div>
+  <div class="telemetry">
+油耗曲线：3.31 → 3.19 L/圈（Lean模式）<br>
+省出：4圈 × 3.19 = 12.76L = 跳过一次标准进站窗口<br>
+进站耗时：49.2s（vs 科尔维特 68.1s）<br>
+反超位置：+14.0s
+  </div>
+</div>
+
+<!-- P11: 收尾手术刀 -->
+<div class="page">
+  <h2>第五章 · Verstappen 收尾（最后两小时 · 天亮）</h2>
+  <div class="first-person">
+最后一段，还我。<br><br>
+凌晨最黑那段过去了。天边发灰。上车。油量够4圈。胎温前84后82。科尔维特在后面追，新胎，García，差4.3秒。<br><br>
+Sal："最后两小时。别作死。"<br>
+"我不作死。我做手术。"<br><br>
+第一刀：banking末端内线。前面一台GTD组法拉利客户车缩在中间，我晚刹三米切内线。前双叉臂咬住，后轴重但贴地。从内线缝过。套了他一圈。<br><br>
+第二刀：infield诱导。García跟尾流准备直道抽头。第14弯我走内线偏中，留外线"开着"。他真走外线。第15弯右弯他从外线进，刹车点必须早——我晚刹1.5米切apex。他出弯轮胎没热，油不敢给满。一个弯，0.4秒。<br><br>
+第三刀：最后超车。GTP组的宝马M Hybrid V8进弯慢，我在infield从内线贴过去。半个车身。他右后离我左前两英寸。过了。没碰。<br><br>
+赛车最爽的不是撞线，是"我看见缝，车穿过缝，漆都没掉"。<br><br>
+最后三圈。油表红灯恒亮。不锁胎，不滑出线。<br><br>
+最后一个弯。Ford发卡。刹车。脚底摸临界。松一丝。车头进。出弯全油。<br>
+直道。start/finish线。冲。
+  </div>
+  <div class="gforce">1.91 G</div>
+  <div class="label">最后超车横向G峰值</div>
+</div>
+
+<!-- P12: 冲线 -->
+<div class="page">
+  <h2>冲线</h2>
+  <div class="center" style="margin-top:8vh">
+    <div class="label">星期日 · 中午</div>
+    <div class="big">P1</div>
+    <div style="font-size:1.2em;color:#d63384;margin:0.5em 0;">#90 Verstappen.com Racing</div>
+    <div style="font-size:1em;color:#888;">Porsche 911 GT3 R · GTD Pro 组冠军</div>
+    <div class="divider">───</div>
+    <p style="margin-top:1.5em;">引擎熄火。平六缸安静，像一个人喊完最后一声突然哑了。</p>
+    <p>摘头盔。头发湿透，眼眶发红。</p>
+    <p>Sal站在车门边，没拍我，先递水。</p>
+    <p>Vanthoor走过来，拍车顶。Engel笑："你最后那下内线，横向G 1.91。"</p>
+    <p>海耶斯举起能量棒，像举奖杯。</p>
+    <p>"四双手，一台车。"</p>
+    <p>"海耶斯开头，我收尾，中间两个疯子守夜。"</p>
+    <p>"车我调的，油Engel算的，夜Dries守的。"</p>
+    <p>"赢的是这台车本身。"</p>
+    <div class="end-mark">🏁</div>
+  </div>
+</div>
+
+<!-- P13: 车检 -->
+<div class="page">
+  <h2>赛后车检</h2>
+  <p>赛事干事量胎压、查尾翼、看BoP。90号全部卡在规则极限内。</p>
+  <div class="telemetry">
+前胎压：27.1 psi（规则上限 27.5）<br>
+后胎压：26.9 psi（规则上限 27.0）<br>
+尾翼角度：31°（BoP上限 31°）<br>
+刹车偏置：前52后48（规则上限前53）<br>
+燃油映射：Lean（规则允许）
+  </div>
+  <div class="quote">
+干事："你刹车偏置怎么设的？"<br>
+Max："前52后48。"<br>
+干事："规则上限是53。"<br>
+Max："所以没超。"<br>
+干事看了他一眼，没再说。
+  </div>
+  <p>海耶斯在远处举起能量棒，像举奖杯。</p>
+  <p>Sal合上战术板："下次别抢对讲。"</p>
+  <p>"那不是抢。那是指挥。"</p>
+  <p>"那是骂人。"</p>
+  <p>"那叫有效沟通。"</p>
+</div>
+
+<!-- P14: 尾声 -->
+<div class="page">
+  <h2>尾声 · 为什么耐力赛值得看</h2>
+  <p>戴通纳不是赛道。是四个人轮流跟物理谈判，最后把车完好开回来的地方。</p>
+  <div class="quote">
+一台从电影里开出来的车。<br>
+一个开它的人，既调它，也救它。<br>
+戴通纳不是比谁快，是比谁在油膜、雨、和凌晨三点里，还能把车放回线上。
+  </div>
+  <p>它不像F1那样每站都跑。一年只跑一次。二十四小时。从周六下午到周日下午。</p>
+  <p>你醒着看它，它醒着跑。你睡了它还在跑。你醒来，它还在跑。</p>
+  <p>最后冲线的那台车，不是最快的。是算得最干净的那台。是四个人没犯错的那个团队。</p>
+  <p>90号。蓝粉。活着。第一。</p>
+  <div class="end-mark">🏁</div>
+  <p style="text-align:center;font-size:0.75em;color:#999;margin-top:2em;">Trends Hobby 241084(I) · 1:64 模型柜里那台<br>现在可以立块牌子：<span style="color:#d63384;">"这台，真跑过。"</span></p>
+</div>
+
+<!-- P15: 术语速查 -->
+<div class="page">
+  <h2>术语速查 · 第二遍</h2>
+  <div class="telemetry">
+<b>戴通纳组别</b>：GTP（原型车，全场总冠军）＋ GTD Pro ＋ GTD（均为GT3）<br>
+<b>GTP</b>：勒芒Hypercar同级，有混动/前轴电机，直道比GT3快一截<br>
+<b>慢车</b>：被套圈的GTD客户车，青铜绅士车手，必须让车<br>
+<b>Banking</b>：斜坡弯，31度，300km/h贴墙，离心力1.8G<br>
+<b>尾流</b>：跟在前车后面，风阻减小，直道尾速多2-3km/h<br>
+<b>走线</b>：赛车过弯最优路径，内线最短但出弯角度差，外线反之<br>
+<b>路肩</b>：弯内彩色凸起带，压上去车会跳，但能缩短走线<br>
+<b>安全车</b>：全场跟车限速，是跳进站窗口的黄金机会<br>
+<b>FCY</b>：Full Course Yellow，全场黄旗，限速但不用跟安全车<br>
+<b>Stint</b>：一位车手连续驾驶的一段，GT3通常1.5-3小时<br>
+<b>BoP</b>：性能平衡，赛会把快车的油箱缩小/尾翼调钝<br>
+<b>热熔胎</b>：工作温度80-100℃，低于60℃像石头，高于110℃颗粒化<br>
+<b>平六缸</b>：保时捷招牌引擎，重心低，声音尖，线性输出<br>
+<b>后置引擎</b>：引擎在车尾，后轴重，出弯抓地好但甩尾倾向高<br>
+<b>差速器</b>：让左右后轮以不同转速过弯<br>
+<b>脉冲刹车</b>：踩-松-踩-松，模拟ABS效果，GT3车手必备技能
+  </div>
+</div>
+
+<!-- P16: 完 -->
+<div class="page">
+  <div class="center" style="margin-top:20vh">
+    <div class="end-mark">🏁</div>
+    <h1 style="margin-top:0.5em;">完</h1>
+    <div class="divider">───</div>
+    <p style="font-size:0.85em;color:#888;margin-top:1em;">《戴通纳，九十号：四双手》</p>
+    <p style="font-size:0.8em;color:#999;">Verstappen.com Racing · 戴通纳24小时 · GTD Pro 冠军</p>
+    <p style="font-size:0.75em;color:#aaa;margin-top:2em;">MP3 就位 · 循环播放 · 间隔1.5秒</p>
+    <p style="font-size:0.75em;color:#aaa;">策略指挥原型参照 IMSA Don Salama 一脉</p>
+  </div>
+</div>
+
+</div>
+
+<div id="bottombar">
+  <button id="prevBtn" onclick="prevPage()">← 上一页</button>
+  <span id="page-indicator">1 / 16</span>
+  <button id="nextBtn" onclick="nextPage()">下一页 →</button>
+</div>
+
+<!-- 音乐控制栏 -->
+<div id="music-bar">
+  <button id="playPauseBtn" onclick="toggleMusic()" title="播放/暂停">▶</button>
+  <input type="range" id="volumeSlider" min="0" max="100" value="60" oninput="setVolume(this.value)">
+  <span id="music-status">暂停</span>
+  <span id="music-hint">点击播放配乐</span>
+</div>
+
+<script>
+// ===== 音乐控制 =====
+const audio = document.getElementById('bgm');
+const playPauseBtn = document.getElementById('playPauseBtn');
+const musicStatus = document.getElementById('music-status');
+let isPlaying = false;
+const GAP = 1500; // 循环间隔 1.5 秒
+
+audio.volume = 0.6;
+
+// 音频结束 → 等1.5秒 → 重新播放
+audio.addEventListener('ended', () => {
+  if (isPlaying) {
+    musicStatus.textContent = '间隔...';
+    setTimeout(() => {
+      audio.currentTime = 0;
+      audio.play();
+      musicStatus.textContent = '播放中';
+    }, GAP);
+  }
+});
+
+function toggleMusic() {
+  if (isPlaying) {
+    audio.pause();
+    isPlaying = false;
+    playPauseBtn.textContent = '▶';
+    musicStatus.textContent = '暂停';
+  } else {
+    audio.play().then(() => {
+      isPlaying = true;
+      playPauseBtn.textContent = '⏸';
+      musicStatus.textContent = '播放中';
+    }).catch((err) => {
+      musicStatus.textContent = '失败:' + err.name;
+      console.error('播放失败:', err);
+    });
+  }
+}
+
+function setVolume(val) {
+  audio.volume = val / 100;
+}
+
+// ===== 翻页 =====
+let currentPage = 0;
+const pages = document.querySelectorAll('.page');
+const totalPages = pages.length;
+const chapterNames = [
+  "封面","给不懂赛车的你","四个人","赛前策略会议","车","海耶斯首棒",
+  "Verstappen 救车","手术刀超车","Vanthoor 夜战","Engel 算油",
+  "收尾手术刀","冲线","车检","尾声","术语速查","完"
+];
+
+let lastFlipTime = 0;
+const FLIP_COOLDOWN = 220;
+
+function canFlip() {
+  const now = Date.now();
+  if (now - lastFlipTime < FLIP_COOLDOWN) return false;
+  lastFlipTime = now;
+  return true;
+}
+
+function showPage(n) {
+  pages.forEach((p, i) => {
+    if (i === n) { p.classList.add('active'); }
+    else { p.classList.remove('active'); }
+  });
+  document.getElementById('page-indicator').textContent = (n+1) + ' / ' + totalPages;
+  document.getElementById('chapter-title').textContent = chapterNames[n];
+  document.getElementById('prevBtn').disabled = (n === 0);
+  document.getElementById('nextBtn').disabled = (n === totalPages - 1);
+}
+
+function nextPage() {
+  if (currentPage < totalPages - 1 && canFlip()) { currentPage++; showPage(currentPage); }
+}
+function prevPage() {
+  if (currentPage > 0 && canFlip()) { currentPage--; showPage(currentPage); }
+}
+
+let spacePressed = false;
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight') { e.preventDefault(); nextPage(); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); prevPage(); }
+  if (e.key === ' ') {
+    e.preventDefault();
+    if (!spacePressed) {
+      spacePressed = true;
+      nextPage();
+    }
+  }
+});
+document.addEventListener('keyup', (e) => {
+  if (e.key === ' ') { spacePressed = false; }
+});
+
+let touchStartX = 0;
+let touchStartY = 0;
+let touchMoved = false;
+document.addEventListener('touchstart', (e) => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+  touchMoved = false;
+}, {passive: true});
+document.addEventListener('touchmove', (e) => {
+  const dx = Math.abs(e.touches[0].clientX - touchStartX);
+  const dy = Math.abs(e.touches[0].clientY - touchStartY);
+  if (dx > 10 || dy > 10) touchMoved = true;
+}, {passive: true});
+document.addEventListener('touchend', (e) => {
+  if (!touchMoved) return;
+  let dx = e.changedTouches[0].clientX - touchStartX;
+  let dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
+  if (Math.abs(dx) > 90 && Math.abs(dx) > dy * 2) {
+    if (dx < 0) nextPage();
+    else prevPage();
+  }
+});
+
+let totalSeconds = 24 * 3600;
+function updateClock() {
+  let h = Math.floor(totalSeconds / 3600);
+  let m = Math.floor((totalSeconds % 3600) / 60);
+  let s = totalSeconds % 60;
+  document.getElementById('clock').textContent =
+    'T-' + String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  if (totalSeconds > 0) totalSeconds--;
+}
+setInterval(updateClock, 1000);
+
+showPage(0);
+</script>
+
+</body>
+</html>
